@@ -5,6 +5,7 @@ from telegram.ext import Dispatcher, CommandHandler, MessageHandler, Filters, Ca
 from yt_dlp import YoutubeDL
 from dotenv import load_dotenv
 import logging
+import re
 
 load_dotenv()
 TOKEN = os.getenv("TELEGRAM_TOKEN")
@@ -20,11 +21,20 @@ user_links = {}
 def start(update: Update, context: CallbackContext):
     update.message.reply_text("Envía un nombre de video o un link de YouTube.")
 
+import re
+
 def handle_message(update: Update, context: CallbackContext):
     chat_id = update.message.chat_id
-    text = update.message.text
+    text = update.message.text.strip()
 
-    user_links[chat_id] = text
+    # Verificar si es un enlace de YouTube
+    is_link = re.match(r'^https?://(www\.)?(youtube\.com|youtu\.be)/', text)
+
+    # Si no es link, usar ytsearch
+    video_source = text if is_link else f"ytsearch1:{text}"
+
+    user_links[chat_id] = video_source
+
     keyboard = [
         [InlineKeyboardButton("🎵 Audio", callback_data='audio'),
          InlineKeyboardButton("🎥 Video", callback_data='video')]
